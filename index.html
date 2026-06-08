@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generador de Currículum PDF Carta</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Librerías para convertir el CV a PDF en GitHub Pages -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <span class="badge">CV en una página · Tamaño carta · PDF</span>
+      <h1>Generador creativo de currículum</h1>
+      <p>Completa tus datos, sube o toma una fotografía, recórtala en círculo y descarga tu hoja de vida en PDF.</p>
+    </div>
+  </header>
+
+  <main class="app">
+    <section class="panel form-panel">
+      <h2>Datos del currículum</h2>
+
+      <form id="cvForm">
+        <div class="photo-box">
+          <label for="foto">Fotografía</label>
+          <input type="file" id="foto" accept="image/*" capture="user">
+          <small>Desde celular puedes tomar foto o elegir una de la galería. Antes de colocarla podrás recortarla.</small>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label>Nombre completo *</label>
+            <input type="text" id="nombre" required placeholder="Ej: María López">
+          </div>
+
+          <div class="field">
+            <label>Profesión / Cargo deseado</label>
+            <input type="text" id="cargo" placeholder="Ej: Asistente administrativa">
+          </div>
+
+          <div class="field">
+            <label>Correo electrónico *</label>
+            <input type="email" id="correo" required placeholder="correo@ejemplo.com">
+          </div>
+
+          <div class="field">
+            <label>Teléfono *</label>
+            <input type="tel" id="telefono" required placeholder="Ej: 77122272">
+          </div>
+
+          <div class="field">
+            <label>Ciudad / País</label>
+            <input type="text" id="ubicacion" placeholder="Ej: Santa Cruz, Bolivia">
+          </div>
+
+          <div class="field">
+            <label>LinkedIn / Portafolio</label>
+            <input type="url" id="linkedin" placeholder="https://...">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Perfil profesional</label>
+          <textarea id="perfil" rows="4" placeholder="Describe brevemente tu experiencia, habilidades y objetivo profesional."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Experiencia laboral</label>
+          <textarea id="experiencia" rows="5" placeholder="Ej: Empresa - Cargo - Años - Funciones principales"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Formación académica</label>
+          <textarea id="educacion" rows="4" placeholder="Ej: Instituto / Universidad - Carrera - Año"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Habilidades</label>
+          <textarea id="habilidades" rows="3" placeholder="Ej: Excel, atención al cliente, liderazgo, diseño web"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Idiomas / Certificaciones</label>
+          <textarea id="extras" rows="3" placeholder="Ej: Inglés básico, certificado en Office, curso de marketing"></textarea>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="btnActualizar">Actualizar vista previa</button>
+          <button type="button" id="btnPDF" class="primary">Descargar PDF</button>
+        </div>
+
+        <p id="mensaje" class="mensaje"></p>
+      </form>
+    </section>
+
+    <section class="preview-wrap">
+      <div class="preview-toolbar">
+        <h2>Vista previa</h2>
+        <span>Tamaño carta</span>
+      </div>
+
+      <article id="cvPreview" class="cv-page">
+        <aside class="cv-left">
+          <img id="previewFoto" src="" alt="Foto de perfil" class="cv-photo hidden">
+          <div class="placeholder-photo" id="placeholderFoto">Foto</div>
+
+          <h3>Contacto</h3>
+          <p id="pCorreo">correo@ejemplo.com</p>
+          <p id="pTelefono">Teléfono</p>
+          <p id="pUbicacion">Ciudad / País</p>
+          <p id="pLinkedin">LinkedIn / Portafolio</p>
+
+          <h3>Habilidades</h3>
+          <ul id="pHabilidades"></ul>
+
+          <h3>Idiomas / Certificaciones</h3>
+          <p id="pExtras">Agrega idiomas o certificaciones.</p>
+        </aside>
+
+        <section class="cv-right">
+          <h1 id="pNombre">Tu Nombre Completo</h1>
+          <h2 id="pCargo">Profesión o cargo deseado</h2>
+
+          <div class="cv-section">
+            <h3>Perfil profesional</h3>
+            <p id="pPerfil">Aquí aparecerá tu resumen profesional.</p>
+          </div>
+
+          <div class="cv-section">
+            <h3>Experiencia laboral</h3>
+            <p id="pExperiencia">Agrega tu experiencia laboral principal.</p>
+          </div>
+
+          <div class="cv-section">
+            <h3>Formación académica</h3>
+            <p id="pEducacion">Agrega tus estudios principales.</p>
+          </div>
+        </section>
+      </article>
+    </section>
+  </main>
+
+  <!-- Modal de recorte circular -->
+  <div id="cropModal" class="crop-modal hidden">
+    <div class="crop-card">
+      <h2>Recortar fotografía</h2>
+      <p>Mueve la foto y usa el zoom para elegir la parte que irá en el currículum.</p>
+
+      <div class="crop-area">
+        <canvas id="cropCanvas" width="360" height="360"></canvas>
+        <div class="circle-guide"></div>
+      </div>
+
+      <label class="zoom-label">Zoom</label>
+      <input type="range" id="zoomRange" min="1" max="3" step="0.01" value="1">
+
+      <div class="crop-actions">
+        <button type="button" id="cancelCrop">Cancelar</button>
+        <button type="button" id="applyCrop" class="primary">Usar esta foto</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
